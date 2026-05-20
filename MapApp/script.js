@@ -1,5 +1,38 @@
 "use strict";
 
+let map;
+let mapEvent;
+let workouts = [];
+
+class Workout {
+  date = new Date();
+  id = (Date.now() + "").slice(-10);
+
+  constructor(coords, distance, duration) {
+    this.coords = coords;
+    this.distance = distance;
+    this.duration = duration;
+  }
+}
+
+class Running extends Workout {
+  constructor(coords, distance, duration, cadence) {
+    super(coords, distance, duration);
+    this.cadence = cadence;
+  }
+}
+
+class Cycling extends Workout {
+  constructor(coords, distance, duration, elevationGain) {
+    super(coords, distance, duration);
+    this.elevation = elevationGain;
+  }
+}
+
+const run1 = new Running([39, -12], 5.2, 24, 178);
+const cycling1 = new Cycling([39, -12], 27, 95, 523);
+console.log(run1, cycling1);
+
 // prettier-ignore
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -18,7 +51,7 @@ navigator.geolocation.getCurrentPosition(
     const longitude = position.coords.longitude;
     const coords = [latitude, longitude];
 
-    var map = L.map("map").setView(coords, 13);
+    map = L.map("map").setView(coords, 13);
 
     L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
       attribution:
@@ -32,25 +65,10 @@ navigator.geolocation.getCurrentPosition(
       )
       .openPopup();
 
-    map.on("click", function (mapEvent) {
-      const lat = mapEvent.latlng.lat;
-      const lng = mapEvent.latlng.lng;
-      console.log(mapEvent);
+    map.on("click", function (mapE) {
+      mapEvent = mapE;
       form.classList.remove(`hidden`);
       inputDistance.focus();
-      L.marker([lat, lng])
-        .addTo(map)
-        .bindPopup(
-          L.popup({
-            maxWidth: 250,
-            minWidth: 100,
-            autoClose: false,
-            closeOnClick: false,
-            className: "running-popup",
-          })
-        )
-        .setPopupContent(`Workout <img src=alexjones-alex-jones-jew.gif>`)
-        .openPopup();
     });
   },
 
@@ -58,3 +76,52 @@ navigator.geolocation.getCurrentPosition(
     alert("Could not get position.");
   }
 );
+
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const type = inputType.value;
+  const distance = Number(inputDistance.value);
+  const duration = Number(inputDuration.value);
+  const lat = mapEvent.latlng.lat;
+  const lng = mapEvent.latlng.lng;
+  let workout;
+
+  L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup(
+      L.popup({
+        maxWidth: 250,
+        minWidth: 100,
+        autoClose: false,
+        closeOnClick: false,
+        className: "running-popup",
+      })
+    )
+    .setPopupContent(`Workout`)
+    .openPopup();
+
+  if (inputType.value == "cycling") {
+    // This code will reset back to running with the correct cadence/elevation options.
+    inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+    inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+  }
+  if (type === "running") {
+    const cadence = Number(inputCadence.value);
+
+    workout = new Running([lat, lng], distance, duration, cadence);
+  }
+  if (type === "cycling") {
+    const elevation = +inputElevation.value;
+
+    workout = new Cycling({ lat, lng }, distance, duration, elevation);
+  }
+  workouts.push(workout);
+  console.log(workouts);
+  form.reset();
+});
+
+inputType.addEventListener("change", function () {
+  inputCadence.closest(".form__row").classList.toggle("form__row--hidden");
+  inputElevation.closest(".form__row").classList.toggle("form__row--hidden");
+});
