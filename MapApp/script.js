@@ -3,6 +3,7 @@
 let map;
 let mapEvent;
 let workouts = [];
+let html;
 
 class Workout {
   date = new Date();
@@ -16,16 +17,42 @@ class Workout {
 }
 
 class Running extends Workout {
+  type = "Running";
+
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
     this.cadence = cadence;
+    this.calcPace();
+    this.setDescription();
+  }
+
+  calcPace() {
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+
+  setDescription() {
+    this.description = `${this.type} on ${this.date.toDateString()}`;
   }
 }
 
 class Cycling extends Workout {
+  type = "Cycling";
+
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
     this.elevation = elevationGain;
+    this.calcPace();
+    this.setDescription();
+  }
+
+  calcPace() {
+    this.pace = this.duration / this.distance;
+    return this.pace;
+  }
+
+  setDescription() {
+    this.description = `${this.type} on ${this.date.toDateString()}`;
   }
 }
 
@@ -109,14 +136,64 @@ form.addEventListener("submit", function (e) {
   if (type === "running") {
     const cadence = Number(inputCadence.value);
 
+    html = `        <li class="workout workout--running" data-id="1234567890">
+    <h2 class="workout__title">Running on April 14</h2>
+    <div class="workout__details">
+      <span class="workout__icon">🏃‍♂️</span>
+      <span class="workout__value">5.2</span>
+      <span class="workout__unit">km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⏱</span>
+      <span class="workout__value">24</span>
+      <span class="workout__unit">min</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">4.6</span>
+      <span class="workout__unit">min/km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">🦶🏼</span>
+      <span class="workout__value">178</span>
+      <span class="workout__unit">spm</span>
+    </div>
+    </li>`;
+
     workout = new Running([lat, lng], distance, duration, cadence);
   }
   if (type === "cycling") {
     const elevation = +inputElevation.value;
 
+    html = `        <li class="workout workout--cycling" data-id="1234567891">
+    <h2 class="workout__title">Cycling on April 5</h2>
+    <div class="workout__details">
+      <span class="workout__icon">🚴‍♀️</span>
+      <span class="workout__value">27</span>
+      <span class="workout__unit">km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⏱</span>
+      <span class="workout__value">95</span>
+      <span class="workout__unit">min</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">16</span>
+      <span class="workout__unit">km/h</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⛰</span>
+      <span class="workout__value">223</span>
+      <span class="workout__unit">m</span>
+    </div>
+    </li>`;
+
     workout = new Cycling({ lat, lng }, distance, duration, elevation);
   }
   workouts.push(workout);
+
+  form.insertAdjacentHTML("afterend", html);
   console.log(workouts);
   form.reset();
 });
