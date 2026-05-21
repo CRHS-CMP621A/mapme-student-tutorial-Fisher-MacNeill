@@ -4,6 +4,96 @@ let map;
 let mapEvent;
 let workouts = [];
 let html;
+for (let workout of workouts) {
+  let lat = workout.coords[0];
+  let lng = workout.coords[1];
+
+  if (workout.type === "Running") {
+    // const cadence = Number(inputCadence.value);
+    // workout = new Running([lat, lng], distance, duration, cadence);
+
+    html = `<li class="workout workout--running" data-id=${workout.id}>
+    <h2 class="workout__title">${workout.description}</h2>
+    <div class="workout__details">
+      <span class="workout__icon">🏃‍♂️</span>
+      <span class="workout__value">${workout.distance}</span>
+      <span class="workout__unit">km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⏱</span>
+      <span class="workout__value">${workout.duration}</span>
+      <span class="workout__unit">min</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.pace}</span>
+      <span class="workout__unit">min/km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">🦶🏼</span>
+      <span class="workout__value">${workout.cadence}</span>
+      <span class="workout__unit">spm</span>
+    </div>
+    </li>`;
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: "running-popup",
+        })
+      )
+      .setPopupContent("Workout")
+      .openPopup();
+  } else if (workout.type === "Cycling") {
+    // const elevation = +inputElevation.value;
+    // workout = new Cycling({ lat, lng }, distance, duration, elevation);
+
+    html = `<li class="workout workout--cycling" data-id="${workout.id}">
+    <h2 class="workout__title">${workout.description}</h2>
+    <div class="workout__details">
+      <span class="workout__icon">🚴‍♀️</span>
+      <span class="workout__value">${workout.distance}</span>
+      <span class="workout__unit">km</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⏱</span>
+      <span class="workout__value">${workout.duration}</span>
+      <span class="workout__unit">min</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⚡️</span>
+      <span class="workout__value">${workout.pace}</span>
+      <span class="workout__unit">km/h</span>
+    </div>
+    <div class="workout__details">
+      <span class="workout__icon">⛰</span>
+      <span class="workout__value">${workout.cadence}</span>
+      <span class="workout__unit">m</span>
+    </div>
+    </li>`;
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup(
+        L.popup({
+          maxWidth: 250,
+          minWidth: 100,
+          autoClose: false,
+          closeOnClick: false,
+          className: "cycling-popup",
+        })
+      )
+      .setPopupContent("Workout")
+      .openPopup();
+  }
+  console.log(html);
+  form.insertAdjacentHTML("afterend", html);
+}
 
 class Workout {
   date = new Date();
@@ -27,7 +117,7 @@ class Running extends Workout {
   }
 
   calcPace() {
-    this.pace = this.duration / this.distance;
+    this.pace = (this.duration / this.distance).toFixed(1);
     return this.pace;
   }
 
@@ -47,7 +137,7 @@ class Cycling extends Workout {
   }
 
   calcPace() {
-    this.pace = this.duration / this.distance;
+    this.pace = ((this.distance / this.duration) * 60).toFixed(1);
     return this.pace;
   }
 
@@ -85,12 +175,14 @@ navigator.geolocation.getCurrentPosition(
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    L.marker(coords)
-      .addTo(map)
-      .bindPopup(
-        "Sir Andrew John Joseph Tennison Bevan Baker Demitrius Demarcus James III Jr"
-      )
-      .openPopup();
+    const data = JSON.parse(localStorage.getItem("workout"));
+
+    if (data) {
+      workouts = data;
+      console.log(data);
+    }
+
+    L.marker(coords).addTo(map).bindPopup("Workout").openPopup();
 
     map.on("click", function (mapE) {
       mapEvent = mapE;
@@ -135,8 +227,9 @@ form.addEventListener("submit", function (e) {
   }
   if (type === "running") {
     const cadence = Number(inputCadence.value);
+    workout = new Running([lat, lng], distance, duration, cadence);
 
-    html = `        <li class="workout workout--running" data-id=${workout.id}>
+    html = `<li class="workout workout--running" data-id=${workout.id}>
     <h2 class="workout__title">${workout.description}</h2>
     <div class="workout__details">
       <span class="workout__icon">🏃‍♂️</span>
@@ -159,13 +252,12 @@ form.addEventListener("submit", function (e) {
       <span class="workout__unit">spm</span>
     </div>
     </li>`;
-
-    workout = new Running([lat, lng], distance, duration, cadence);
   }
   if (type === "cycling") {
     const elevation = +inputElevation.value;
+    workout = new Cycling({ lat, lng }, distance, duration, elevation);
 
-    html = `        <li class="workout workout--cycling" data-id="${workout.id}">
+    html = `<li class="workout workout--cycling" data-id="${workout.id}">
     <h2 class="workout__title">${workout.description}</h2>
     <div class="workout__details">
       <span class="workout__icon">🚴‍♀️</span>
@@ -184,14 +276,13 @@ form.addEventListener("submit", function (e) {
     </div>
     <div class="workout__details">
       <span class="workout__icon">⛰</span>
-      <span class="workout__value">${workout.cadence}</span>
+      <span class="workout__value">${workout.elevation}</span>
       <span class="workout__unit">m</span>
     </div>
     </li>`;
-
-    workout = new Cycling({ lat, lng }, distance, duration, elevation);
   }
   workouts.push(workout);
+  localStorage.setItem("workouts", JSON.stringify(workouts));
 
   form.insertAdjacentHTML("afterend", html);
   console.log(workouts);
