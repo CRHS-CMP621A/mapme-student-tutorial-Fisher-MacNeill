@@ -101,7 +101,6 @@ navigator.geolocation.getCurrentPosition(
       let lng = workout.coords[1];
 
       if (workout.type === "running") {
-        console.log("Parsed");
         // const cadence = Number(inputCadence.value);
         // workout = new Running([lat, lng], distance, duration, cadence);
 
@@ -143,8 +142,6 @@ navigator.geolocation.getCurrentPosition(
           .setPopupContent("Workout")
           .openPopup();
       } else if (workout.type === "cycling") {
-        console.log("Parsed");
-
         // const elevation = +inputElevation.value;
         // workout = new Cycling({ lat, lng }, distance, duration, elevation);
 
@@ -193,7 +190,6 @@ navigator.geolocation.getCurrentPosition(
 
     map.on("click", function (mapE) {
       mapEvent = mapE;
-      console.log("Parsed");
       form.classList.remove(`hidden`);
       inputDistance.focus();
     });
