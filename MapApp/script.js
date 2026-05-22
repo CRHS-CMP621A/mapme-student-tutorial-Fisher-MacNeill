@@ -17,7 +17,7 @@ class Workout {
 }
 
 class Running extends Workout {
-  type = "Running";
+  type = "running";
 
   constructor(coords, distance, duration, cadence) {
     super(coords, distance, duration);
@@ -37,7 +37,7 @@ class Running extends Workout {
 }
 
 class Cycling extends Workout {
-  type = "Cycling";
+  type = "cycling";
 
   constructor(coords, distance, duration, elevationGain) {
     super(coords, distance, duration);
@@ -88,6 +88,10 @@ navigator.geolocation.getCurrentPosition(
     const data = JSON.parse(localStorage.getItem("workouts"));
 
     if (data) {
+      workouts = data.filter((workout) => workout && workout.coords);
+    }
+
+    if (data) {
       workouts = data;
       console.log(data);
     }
@@ -96,7 +100,8 @@ navigator.geolocation.getCurrentPosition(
       let lat = workout.coords[0];
       let lng = workout.coords[1];
 
-      if (workout.type === "Running") {
+      if (workout.type === "running") {
+        console.log("Parsed");
         // const cadence = Number(inputCadence.value);
         // workout = new Running([lat, lng], distance, duration, cadence);
 
@@ -137,7 +142,9 @@ navigator.geolocation.getCurrentPosition(
           )
           .setPopupContent("Workout")
           .openPopup();
-      } else if (workout.type === "Cycling") {
+      } else if (workout.type === "cycling") {
+        console.log("Parsed");
+
         // const elevation = +inputElevation.value;
         // workout = new Cycling({ lat, lng }, distance, duration, elevation);
 
@@ -179,14 +186,14 @@ navigator.geolocation.getCurrentPosition(
           .setPopupContent("Workout")
           .openPopup();
       }
-      console.log(html);
       form.insertAdjacentHTML("afterend", html);
     }
 
-    L.marker(coords).addTo(map).bindPopup("Workout").openPopup();
+    // L.marker(coords).addTo(map).bindPopup("Workout").openPopup();
 
     map.on("click", function (mapE) {
       mapEvent = mapE;
+      console.log("Parsed");
       form.classList.remove(`hidden`);
       inputDistance.focus();
     });
@@ -282,10 +289,14 @@ form.addEventListener("submit", function (e) {
     </div>
     </li>`;
   }
+  if (!workout) return;
+
   workouts.push(workout);
   localStorage.setItem("workouts", JSON.stringify(workouts));
 
-  form.insertAdjacentHTML("afterend", html);
+  if (html) {
+    form.insertAdjacentHTML("afterend", html);
+  }
   console.log(workouts);
   form.reset();
 });
